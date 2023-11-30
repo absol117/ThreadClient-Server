@@ -9,10 +9,13 @@ public class MainServer {
     public static void main(String[] args) {
         Server server = new Server(8080);
 
+
+
+
         Thread timerThread = new Thread(() -> {
             while (true) {
                 try {
-                    Thread.sleep(4000);
+                    Thread.sleep(10000);
                     if (server.isIdle()) {
                         System.out.println("SERVER: Nessuna nuova connessione per 10 secondi.");
                         server.closeServer();
@@ -27,12 +30,14 @@ public class MainServer {
         timerThread.start();
 
 
-        while (true) {
-            Socket socket = server.startConnection();
-            Thread clientHandelerThread = new Thread(new ClientHandler(socket,server));
-            clientHandelerThread.start();
-        }
 
+        while (!server.isClosed()) {
+            Socket socket = server.startConnection();
+            if (socket != null) {
+                Thread clientHandlerThread = new Thread(new ClientHandler(socket, server));
+                clientHandlerThread.start();
+            }
+        }
 
 
 

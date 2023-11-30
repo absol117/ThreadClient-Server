@@ -8,6 +8,8 @@ public class Server {
     private ServerSocket serverSocket;
     private Socket accept;
     private int port;
+    private boolean isClosed = false;
+
 
     private long lastConnectionTime;
 
@@ -32,7 +34,7 @@ public class Server {
     }
 
     public boolean isIdle() {
-        return System.currentTimeMillis() - lastConnectionTime > 5000;
+        return System.currentTimeMillis() - lastConnectionTime > 10000;
     }
 
     public void close(Socket accept) {
@@ -47,10 +49,15 @@ public class Server {
     public void closeServer() {
         try {
             serverSocket.close();
+            isClosed = true;
             System.out.println("Server chiuso");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public boolean isClosed() {
+        return isClosed;
     }
 }
 
