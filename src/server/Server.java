@@ -1,51 +1,53 @@
 package server;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
 public class Server {
     private ServerSocket serverSocket;
-    private Socket socket;
-    private BufferedReader in;
-    private PrintWriter out;
+    private Socket accept;
+    private int port;
 
-    public void startServer(int port) {
+    private long lastConnectionTime;
+
+    public Server(int port) {
+        this.port = port;
         try {
-            serverSocket = new ServerSocket(port);
-            socket = serverSocket.accept();
-            System.out.println("SERVER: Connessione Stabilita");
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            out = new PrintWriter(socket.getOutputStream(), true);
+            this.serverSocket = new ServerSocket(port);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public String read() {
+    public Socket startConnection() {
         try {
-            System.out.print("SERVER: Messaggio ricevuto:  ");
-            return in.readLine();
+            this.accept = serverSocket.accept();
+            System.out.println("Connessione Stabilita");
+            this.lastConnectionTime = System.currentTimeMillis();
+            return accept;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void write(String message) {
-        out.println(message);
-        System.out.println("SERVER: Messaggio inviato");
+    public boolean isIdle() {
+        return System.currentTimeMillis() - lastConnectionTime > 5000;
     }
 
-    public void close() {
+    public void close(Socket accept) {
         try {
-            in.close();
-            out.close();
-            socket.close();
+            accept.close();
+            System.out.println("Connessione Terminata");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void closeServer() {
+        try {
             serverSocket.close();
-            System.out.println("SERVER: Connessione Terminata");
+            System.out.println("Server chiuso");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
